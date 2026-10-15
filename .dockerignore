@@ -1,0 +1,9 @@
+.git
+.env
+.vscode
+.venv
+__pycache__
+*.pyc
+docs
+README.md
+Jenkinsfile

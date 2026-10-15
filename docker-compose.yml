@@ -1,0 +1,56 @@
+name: two-tier-notes
+
+services:
+  db:
+    image: mysql:8.4
+    container_name: notes-db
+    restart: unless-stopped
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: notesdb
+      MYSQL_USER: notesapp
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the .env file or in Jenkins}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  web:
+    build:
+      context: .
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
+    image: notes-web:${APP_VERSION:-dev}
+    container_name: notes-web
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: db
+      DB_NAME: notesdb
+      DB_USER: notesapp
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in the .env file or in Jenkins}
+      APP_VERSION: ${APP_VERSION:-dev}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  db_data:
+
+networks:
+  backend:
