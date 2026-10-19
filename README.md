@@ -57,4 +57,9 @@ The database password is stored in Jenkins credentials, never in Git.
 Docker health checks and a pipeline health stage confirm both tiers are working.
 The web container runs as a non-root user.
 What I learned
-<write 3 or 4 points in your own words>
+Cloud basics: I created an Azure resource group, an Ubuntu virtual machine, a network security group that opens only the ports I need, and a static public IP, and I logged in with an SSH key pair.
+Containers: I packaged a Flask web tier as a Docker image and ran it next to MySQL with Docker Compose. I learned why the database port is not exposed to the internet, and why a volume is needed to keep data after a restart.
+Secrets: I kept the database password out of the code and out of Git, using a .env file on the server and a Jenkins credential in the pipeline.
+CI/CD: I wrote a declarative Jenkinsfile with build, test, deploy and health-check stages, and connected GitHub to Jenkins with a webhook so every push is deployed automatically.
+Debugging: I fixed real problems such as Docker permission errors, a missing SSH key file, and a database that kept its first password inside its volume.
+Git workflow: I used clone, commit and push, and a .gitignore so secrets never reach GitHub.
